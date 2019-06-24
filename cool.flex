@@ -82,7 +82,7 @@ INVALID		"!"|"#"|"$"|"%"|"^"|"&"|"_"|">"|"?"|"`"|"["|"]"|"\\"|"|"
  * ?i: označava da su navedeni izrazi case insensitive
  * Popis ključnih riječi našao sam u pdf-u cool_manual pod poglavljem 10.4 Keywords
  * U cool_manual.pdf-u piše da TRUE I FALSE moraju započimati malim slovom, a da je ostatak case insensitive, stoga je za njih izraz: t(?i:rue).
- * /
+ */
 CLASS		(?i:class)
 ELSE		(?i:else)
 FI		(?i:fi)
