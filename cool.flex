@@ -75,7 +75,7 @@ whitespace		" "|"\f"|"\r"|"\t"|"\v"
 /*
  * Popis specijalnih znakova sam pronašao na internetu.
  */
-SINGLES_CHARACTERS		"+"|"-"|"*"|"/"|"~"|"<"|"="|"("|")"|"{"|"}"|";"|":"|"."|","|"@"
+SINGLES_CHARACTERS		"+"|"-"|"*"|"/"|"<"|"="|"("|")"|"{"|"}"|";"|":"|"@"|"~"|"."|","
 
  /*
   * Keywords are case-insensitive except for the values true and false,
