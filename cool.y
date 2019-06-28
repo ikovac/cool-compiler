@@ -256,8 +256,7 @@
     ;
 
     block_expression_list
-    : /* epsilon */ { $$ = nil_Expressions(); }
-    | expression ';' { $$ = single_Expressions($1); }
+    : expression ';' { $$ = single_Expressions($1); }
     | block_expression_list expression ';' { $$ = append_Expressions($1, single_Expressions($2)); }
     | block_expression_list error ';' {}
     | error {}
