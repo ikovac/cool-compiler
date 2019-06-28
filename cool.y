@@ -209,7 +209,7 @@
     formals_list
     : /*epsilon */ { $$ = nil_Formals(); }
     | formal { $$ = single_Formals($1); }
-    | formals_list ',' formal { $$ = appendFormals($1, single_Formals($3)); }
+    | formals_list ',' formal { $$ = append_Formals($1, single_Formals($3)); }
     | error {}
     ;
 
@@ -227,14 +227,14 @@
     expression
     : BOOL_CONST { $$ = bool_const($1); }
     | INT_CONST { $$ = int_const($1); }
-    | STR_CONST { $$ = str_const($1); }
+    | STR_CONST { $$ = string_const($1); }
     | OBJECTID ASSIGN expression { $$ = assign($1, $3); }
     | expression '.' OBJECTID '(' ')' { $$ = dispatch($1, $3, nil_Expressions()); }
     | expression '.' OBJECTID '(' expression_list ')' { $$ = dispatch($1, $3, $5); }
-    | OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self"), $1, nil_Expressions()); }
-    | OBJECTID '(' expression_list ')' { $$ = dispatch(object(idtable.add_string("self"), $1, $3); }
+    | OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions()); }
+    | OBJECTID '(' expression_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1, $3); }
     | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
-    | expression '@' TYPEID '.' OBJECTID '(' expression_list ')' { $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8)); }
+    | expression '@' TYPEID '.' OBJECTID '(' expression_list ')' { $$ = static_dispatch($1, $3, $5, $7); }
     | IF expression THEN expression ELSE expression FI { $$ = cond($2, $4, $6); }
     | WHILE expression LOOP expression POOL { $$ = loop($2, $4);}
     | '{' block_expression_list '}' { $$ =  block($2); }
@@ -248,7 +248,7 @@
     | expression '/' expression { $$ = divide($1, $3); }
     | expression '<' expression { $$ = lt($1, $3); }
     | expression '=' expression { $$ = eq($1, $3); }
-    | expression LE expression { $$ = ley($1, $3); }
+    | expression LE expression { $$ = leq($1, $3); }
     | '~' expression { $$ = neg($2); }
     | NOT expression { $$ = comp($2); }
     | OBJECTID { $$ = object($1); }
@@ -270,7 +270,7 @@
 
     case_list
     : /* epsilon */ { $$ = nil_Cases(); }
-    | case_list case { $$ = append_Cases($1, singleCases($2)); }
+    | case_list case { $$ = append_Cases($1, single_Cases($2)); }
     ;
 
     case
