@@ -152,6 +152,7 @@
     %type <case_> case
     
     /* Precedence declarations go here. */
+    %nonassoc IN
     %right LET
     %right ASSIGN
     %left NOT
@@ -191,7 +192,8 @@
     
     /* Feature list may be empty, but no empty features in list. */
     feature_list
-    :		/* empty */ {  $$ = nil_Features(); }
+    :		/* epsilon */ {  $$ = nil_Features(); }
+    | feature { $$ = single_Features($1); }
     | feature_list feature { $$ = append_Features($1, single_Features($2)); }
     ;
 
@@ -200,16 +202,28 @@
     | OBJECTID '(' formals_list ')' ':' TYPEID '{' expression '}' ';' { $$ = method($1, $3, $6, $8); }
     | OBJECTID ':' TYPEID ';' { $$ = attr($1, $3, no_expr()); }
     | OBJECTID ':' TYPEID ASSIGN expression ';' { $$ = attr($1, $3, $5); }
+
+    | OBJECTID ':' error ';'						{ yyclearin; $$=NULL; }
+    | OBJECTID '(' formal formal_list ')' ':' TYPEID '{' error '}' ';'	{ yyclearin; $$=NULL; }
+    | OBJECTID '(' ')' ':' TYPEID '{' error '}' ';'			{ yyclearin; $$=NULL; }
+    | OBJECTID '(' error ')' ':' TYPEID '{' expr'}' ';'			{ yyclearin; $$=NULL; }
+    | OBJECTID '(' error formal_list ')' ':' TYPEID '{' expr '}' ';'	{ yyclearin; $$=NULL; }
+    ;
+
+    formals_list
+    : /*epsilon */ { $$ = nil_Formals(); }
+    | formal { $$ = single_Formals($1); }
+    | formals_list ',' formal { $$ = appendFormals($1, single_Formals($3)); }
+    ;
+
+    formal
+    : OBJECTID ':' TYPEID { $$ = formal($1, $3); }
     ;
 
     expression_list
-    : expression { $$ = single_Expressions($1); }
-    | expression_list ',' expression { $$ = append_Expressions($1, single_Expressions($2)); }
-    ;
-
-    block_expression_list
-    : /* epsilon */ { $$ = nil_Expressions(); }
-    | block_expression_list expression ';' { $$ = append_Expressions($1, single_Expressions($2)); }
+    : /* epsolon */ { $$ = nil_Expressions(); }
+    | expression { $$ = single_Expressions($1); }
+    | expression_list ',' expression { $$ = append_Expressions($1, single_Expressions($3)); }
     ;
 
     expression
@@ -243,12 +257,16 @@
     | '(' expression ')' { $$ = $2; }
     ;
 
+    block_expression_list
+    : /* epsilon */ { $$ = nil_Expressions(); }
+    | block_expression_list expression ';' { $$ = append_Expressions($1, single_Expressions($2)); }
+    ;
+
     let_expression
     : OBJECTID ':' TYPEID IN expression { $$ = let($1, $3, no_expr(),$5); } 
     | OBJECTID ':' TYPEID ASSIGN expression IN expression { $$ = let($1, $3, $5, $7); }
     | OBJECTID ':' TYPEID ',' let_expression { $$ = let($1, $3, no_expr(), $5); }
     | OBJECTID ':' TYPEID ASSIGN expression ',' let_expression { $$ = let($1, $3, $5, $7); }
-    | ERROR { }
     ;
 
     case_list
