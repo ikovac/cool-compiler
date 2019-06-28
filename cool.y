@@ -202,12 +202,6 @@
     | OBJECTID '(' formals_list ')' ':' TYPEID '{' expression '}' ';' { $$ = method($1, $3, $6, $8); }
     | OBJECTID ':' TYPEID ';' { $$ = attr($1, $3, no_expr()); }
     | OBJECTID ':' TYPEID ASSIGN expression ';' { $$ = attr($1, $3, $5); }
-
-    | OBJECTID ':' error ';'						{ yyclearin; $$=NULL; }
-    | OBJECTID '(' formal formal_list ')' ':' TYPEID '{' error '}' ';'	{ yyclearin; $$=NULL; }
-    | OBJECTID '(' ')' ':' TYPEID '{' error '}' ';'			{ yyclearin; $$=NULL; }
-    | OBJECTID '(' error ')' ':' TYPEID '{' expr'}' ';'			{ yyclearin; $$=NULL; }
-    | OBJECTID '(' error formal_list ')' ':' TYPEID '{' expr '}' ';'	{ yyclearin; $$=NULL; }
     ;
 
     formals_list
