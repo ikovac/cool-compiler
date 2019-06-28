@@ -150,6 +150,17 @@
     %type <features> dummy_feature_list
     
     /* Precedence declarations go here. */
+    %nonassoc IN
+    %right ASSIGN
+    %left NOT
+    %nonassoc '<' LE '='
+    %left '+' '-'
+    %left '*' '/'
+    %left ISVOID
+    %left '~' 
+    %left '@'
+    %left '.'
+
     
     
     %%
@@ -179,6 +190,22 @@
     /* Feature list may be empty, but no empty features in list. */
     dummy_feature_list:		/* empty */
     {  $$ = nil_Features(); }
+
+    expression_list
+    : expression { $$ = single_Expressions($1); }
+    : expression_list expression { $$ = append_Expressions($1, single_Expressions($2)); }
+
+    expression: 
+    BOOL_CONST { $$ = bool_const($1); }
+    | INT_CONST { $$ = int_const($1); }
+    | STR_CONST { $$ = str_const($1); }
+    | OBJECTID ASSIGN expression { $$ = assign($1, $3); }
+    | expression '.' OBJECTID '(' ')' { $$ = dispatch($1, $3, nil_Expressions()); }
+    | expression '.' OBJECTID '(' expression_list ')' { $$ = dispatch($1, $3, $5); }
+    | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
+    | expression '@' TYPEID '.' OBJECTID '(' expression_list ')' { $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8)); }
+    | IF expression THEN expression ELSE expression FI { $$ = cond($2, $4, $6); }
+    ;
     
     
     /* end of grammar */
