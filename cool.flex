@@ -285,16 +285,13 @@ DBL_QUOTE		\"
 <STRING>\\f { *string_buf_ptr++ = '\f'; }
 <STRING>\\[^\0]	{ *string_buf_ptr++ = yytext[1]; }
 
-/*
- * Čitamo znakove stringa i stavljamo ih u buffer.
- */
 <STRING>. { *string_buf_ptr++ = *yytext; }
 
 {newline} { curr_lineno++; }
 {whitespace} 
 
-<ESCAPE>[\n|"]		BEGIN(INITIAL);
-<ESCAPE>[^\n|"]
+<ESCAPE>[\n|\"]		BEGIN(INITIAL);
+<ESCAPE>[^\n|\"]
 
 
 /*
