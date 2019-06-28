@@ -180,6 +180,7 @@
     | class_list class	/* several classes */
     { $$ = append_Classes($1,single_Classes($2)); 
     parse_results = $$; }
+    | error {}
     ;
     
     /* If no parent is specified, the class inherits from the Object class. */
@@ -195,6 +196,7 @@
     :		/* epsilon */ {  $$ = nil_Features(); }
     | feature { $$ = single_Features($1); }
     | feature_list feature { $$ = append_Features($1, single_Features($2)); }
+    | error {}
     ;
 
     feature
@@ -208,6 +210,7 @@
     : /*epsilon */ { $$ = nil_Formals(); }
     | formal { $$ = single_Formals($1); }
     | formals_list ',' formal { $$ = appendFormals($1, single_Formals($3)); }
+    | error {}
     ;
 
     formal
@@ -218,6 +221,7 @@
     : /* epsolon */ { $$ = nil_Expressions(); }
     | expression { $$ = single_Expressions($1); }
     | expression_list ',' expression { $$ = append_Expressions($1, single_Expressions($3)); }
+    | error {}
     ;
 
     expression
@@ -261,6 +265,7 @@
     | OBJECTID ':' TYPEID ASSIGN expression IN expression { $$ = let($1, $3, $5, $7); }
     | OBJECTID ':' TYPEID ',' let_expression { $$ = let($1, $3, no_expr(), $5); }
     | OBJECTID ':' TYPEID ASSIGN expression ',' let_expression { $$ = let($1, $3, $5, $7); }
+    | error {}
     ;
 
     case_list
