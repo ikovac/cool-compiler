@@ -180,15 +180,16 @@
     | class_list class	/* several classes */
     { $$ = append_Classes($1,single_Classes($2)); 
     parse_results = $$; }
+    | class_list error {}
     | error {}
     ;
     
     /* If no parent is specified, the class inherits from the Object class. */
-    class	: CLASS TYPEID '{' feature_list '}' ';'
-    { $$ = class_($2,idtable.add_string("Object"),$4,
-    stringtable.add_string(curr_filename)); }
-    | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'
-    { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+    class
+    : CLASS TYPEID '{' feature_list '}' ';'  { $$ = class_($2,idtable.add_string("Object"), $4, stringtable.add_string(curr_filename)); }
+    | CLASS TYPEID '{' '}' ';' { $$ = class_($2, idtable.add_string("Object"), nil_Features(), stringtable.add_string(curr_filename)); }
+    | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'  { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+    | CLASS TYPEID INHERITS TYPEID '{' '}' ';' { $$ = class_($2, $4, nil_Features(), stringtable.add_string(curr_filename));}
     ;
     
     /* Feature list may be empty, but no empty features in list. */
@@ -196,7 +197,8 @@
     :		/* epsilon */ {  $$ = nil_Features(); }
     | feature { $$ = single_Features($1); }
     | feature_list feature { $$ = append_Features($1, single_Features($2)); }
-    | error {}
+    | feature_list error ';' { }
+    | error { }
     ;
 
     feature
@@ -210,7 +212,6 @@
     : /*epsilon */ { $$ = nil_Formals(); }
     | formal { $$ = single_Formals($1); }
     | formals_list ',' formal { $$ = append_Formals($1, single_Formals($3)); }
-    | error {}
     ;
 
     formal
@@ -218,10 +219,9 @@
     ;
 
     expression_list
-    : /* epsolon */ { $$ = nil_Expressions(); }
+    : /* epsilon */ { $$ = nil_Expressions(); }
     | expression { $$ = single_Expressions($1); }
     | expression_list ',' expression { $$ = append_Expressions($1, single_Expressions($3)); }
-    | error {}
     ;
 
     expression
@@ -257,19 +257,23 @@
 
     block_expression_list
     : /* epsilon */ { $$ = nil_Expressions(); }
+    | expression ';' { $$ = single_Expressions($1); }
     | block_expression_list expression ';' { $$ = append_Expressions($1, single_Expressions($2)); }
+    | block_expression_list error ';' {}
+    | error {}
     ;
 
     let_expression
-    : OBJECTID ':' TYPEID IN expression { $$ = let($1, $3, no_expr(),$5); } 
+    : OBJECTID ':' TYPEID IN expression { $$ = let($1, $3, no_expr(), $5); } 
     | OBJECTID ':' TYPEID ASSIGN expression IN expression { $$ = let($1, $3, $5, $7); }
     | OBJECTID ':' TYPEID ',' let_expression { $$ = let($1, $3, no_expr(), $5); }
     | OBJECTID ':' TYPEID ASSIGN expression ',' let_expression { $$ = let($1, $3, $5, $7); }
-    | error {}
+    | error let_expression { }
     ;
 
     case_list
     : /* epsilon */ { $$ = nil_Cases(); }
+    | case { $$ = single_Cases($1); }
     | case_list case { $$ = append_Cases($1, single_Cases($2)); }
     ;
 
