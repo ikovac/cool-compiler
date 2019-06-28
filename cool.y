@@ -142,6 +142,8 @@
 
     %type <expressions> expression_list
     %type <expression> expression
+    %type <expressions> block_expression_list
+    %type <expression> let_expression
 
     %type <cases> case_list
     %type <case_> case
@@ -193,18 +195,60 @@
 
     expression_list
     : expression { $$ = single_Expressions($1); }
-    : expression_list expression { $$ = append_Expressions($1, single_Expressions($2)); }
+    | expression_list ',' expression { $$ = append_Expressions($1, single_Expressions($2)); }
+    ;
 
-    expression: 
-    BOOL_CONST { $$ = bool_const($1); }
+    block_expression_list
+    : /* epsilon */ { $$ = nil_Expressions(); }
+    | block_expression_list expression ';' { $$ = append_Expressions($1, single_Expressions($2)); }
+    ;
+
+    expression
+    : BOOL_CONST { $$ = bool_const($1); }
     | INT_CONST { $$ = int_const($1); }
     | STR_CONST { $$ = str_const($1); }
     | OBJECTID ASSIGN expression { $$ = assign($1, $3); }
     | expression '.' OBJECTID '(' ')' { $$ = dispatch($1, $3, nil_Expressions()); }
     | expression '.' OBJECTID '(' expression_list ')' { $$ = dispatch($1, $3, $5); }
+    | OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self"), $1, nil_Expressions()); }
+    | OBJECTID '(' expression_list ')' { $$ = dispatch(object(idtable.add_string("self"), $1, $3); }
     | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
     | expression '@' TYPEID '.' OBJECTID '(' expression_list ')' { $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8)); }
     | IF expression THEN expression ELSE expression FI { $$ = cond($2, $4, $6); }
+    | WHILE expression LOOP expression POOL { $$ = loop($2, $4);}
+    | '{' block_expression_list '}' { $$ =  block($2); }
+    | LET let_expression { $$ = $2; }
+    | CASE expression OF case_list ESAC { $$ = typcase($2, $4); }
+    | NEW TYPEID { $$ = new_($2); }
+    | ISVOID expression { $$ = isvoid($2); }
+    | expression '+' expression { $$ = plus($1, $3); }
+    | expression '-' expression { $$ = sub($1, $3); }
+    | expression '*' expression { $$ = mul($1, $3); }
+    | expression '/' expression { $$ = divide($1, $3); }
+    | expression '<' expression { $$ = lt($1, $3); }
+    | expression '=' expression { $$ = eq($1, $3); }
+    | expression LE expression { $$ = ley($1, $3); }
+    | '~' expression { $$ = neg($2); }
+    | NOT expression { $$ = comp($2); }
+    | OBJECTID { $$ = object($1); }
+    | '(' expression ')' { $$ = $2; }
+    ;
+
+    let_expression
+    : OBJECTID ':' TYPEID IN expression { $$ = let($1, $3, no_expr(),$5); } 
+    | OBJECTID ':' TYPEID ASSIGN expression IN expression { $$ = let($1, $3, $5, $7); }
+    | OBJECTID ':' TYPEID ',' let_expression { $$ = let($1, $3, no_expr(), $5); }
+    | OBJECTID ':' TYPEID ASSIGN expression ',' let_expression { $$ = let($1, $3, $5, $7); }
+    | ERROR { }
+    ;
+
+    case_list
+    : /* epsilon */ { $$ = nil_Cases(); }
+    | case_list case { $$ = append_Cases($1, singleCases($2)); }
+    ;
+
+    case
+    : OBJECTID ':' TYPEID DARROW expression ';' { $$ = branch($1, $3, $5); }
     ;
     
     
